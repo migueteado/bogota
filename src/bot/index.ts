@@ -1,7 +1,6 @@
 import { Client, Intents } from "discord.js"
-import * as commandModules from "../commands"
+import * as eventModules from "../events"
 
-const commands = Object(commandModules)
 export const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -10,19 +9,12 @@ export const client = new Client({
   ],
 })
 
-console.log(commands)
-
-client.once("ready", () => {
-  console.log("🤖 MoaitoBot is ready!")
-})
-
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) {
-    return
+for (const module of Object.values<any>(eventModules)) {
+  if (module.once) {
+    client.once(module.name, module.execute)
+  } else {
+    client.on(module.name, module.execute)
   }
-
-  const { commandName } = interaction
-  commands[commandName]?.execute(interaction, client)
-})
+}
 
 export default client
